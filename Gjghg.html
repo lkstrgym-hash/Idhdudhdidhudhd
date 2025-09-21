@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ربات ساز امن با رمز عبور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        .correct-password-bg {
+            background-color: #d1fae5;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white shadow-2xl rounded-2xl p-8 max-w-2xl w-full text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">ربات ساز امن</h1>
+
+        <!-- Password Section -->
+        <div id="passwordSection" class="space-y-4">
+            <p class="text-gray-600 mb-4">لطفاً برای دسترسی به ابزار، رمز عبور را وارد کنید.</p>
+            <div class="relative max-w-sm mx-auto">
+                <input type="password" id="passwordInput" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-center" placeholder="رمز عبور">
+                <span id="passwordStatus" class="absolute top-full left-1/2 -translate-x-1/2 text-sm mt-2 font-medium"></span>
+            </div>
+            <button id="submitPasswordBtn" class="w-full sm:w-64 bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-indigo-700 transition duration-300 ease-in-out shadow-lg">
+                ورود
+            </button>
+        </div>
+
+        <!-- Main Tool Section -->
+        <div id="toolSection" class="hidden">
+            <p class="text-gray-600 mb-8">توکن ربات خود را وارد کنید تا کد پایتون آماده را دریافت کنید.<br>توکن شما در هیچ سروری ذخیره نمی‌شود.</p>
+
+            <!-- Input Section -->
+            <div class="mb-6">
+                <label for="tokenInput" class="block text-sm font-medium text-gray-700 mb-2">توکن ربات شما:</label>
+                <input type="text" id="tokenInput" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3" placeholder="توکن خود را اینجا وارد کنید">
+            </div>
+
+            <!-- Action Button -->
+            <button id="generateCodeBtn" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-700 transition duration-300 ease-in-out shadow-lg">
+                آماده‌سازی کد
+            </button>
+
+            <!-- Code Output Section -->
+            <div id="codeContainer" class="mt-8 hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">کد پایتون آماده</h2>
+                <div class="relative bg-gray-800 text-white p-6 rounded-xl shadow-lg">
+                    <button id="copyCodeBtn" class="absolute top-3 left-3 bg-gray-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-gray-700 transition-colors duration-200">کپی</button>
+                    <pre id="codeOutput" class="whitespace-pre-wrap font-mono text-sm max-h-96 overflow-y-auto"></pre>
+                </div>
+                <p id="copyStatus" class="text-sm mt-2 hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const correctPassword = '13931393as12345';
+        
+        const passwordSection = document.getElementById('passwordSection');
+        const passwordInput = document.getElementById('passwordInput');
+        const submitPasswordBtn = document.getElementById('submitPasswordBtn');
+        const passwordStatus = document.getElementById('passwordStatus');
+        const toolSection = document.getElementById('toolSection');
+        
+        const tokenInput = document.getElementById('tokenInput');
+        const generateCodeBtn = document.getElementById('generateCodeBtn');
+        const codeContainer = document.getElementById('codeContainer');
+        const codeOutput = document.getElementById('codeOutput');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const copyStatus = document.getElementById('copyStatus');
+
+        submitPasswordBtn.addEventListener('click', () => {
+            if (passwordInput.value === correctPassword) {
+                passwordSection.classList.add('hidden');
+                toolSection.classList.remove('hidden');
+                document.body.classList.add('correct-password-bg');
+            } else {
+                passwordStatus.textContent = "رمز عبور اشتباه است.";
+                passwordStatus.className = "absolute top-full left-1/2 -translate-x-1/2 text-sm mt-2 text-red-500 font-medium";
+                setTimeout(() => {
+                    passwordStatus.textContent = "";
+                }, 3000);
+            }
+        });
+
+        const botCodeTemplate = `
+# -*- coding: utf-8 -*-
+import requests
+import time
+import os
+from datetime import datetime
+from threading import Thread
+
+# ====== تنظیمات روبیکا ======
+TOKEN = "{token_placeholder}"
+
+BASE_URL = f"https://botapi.rubika.ir/v3/{TOKEN}"
+OFFSET_FILE = "offset.txt"
+LOG_FILE = "messages.txt"
+
+# ====== وب سرویس رایگان ChatGPT ======
+CHAT_API_URL = "https://api-free.ir/api/chat.php"
+CHAT_API_TOKEN = "" # اگر توکن برای وب سرویس دارید، اینجا بگذارید.
+
+# بارگذاری offset
+offset_id = None
+if os.path.exists(OFFSET_FILE):
+    try:
+        with open(OFFSET_FILE, "r", encoding="utf-8") as f:
+            offset_id = f.read().strip()
+    except Exception as e:
+        print(f"خطا در خواندن فایل offset: {e}")
+        offset_id = None
+
+def save_offset(offset):
+    """تابع برای ذخیره offset جدید در فایل."""
+    try:
+        with open(OFFSET_FILE, "w", encoding="utf-8") as f:
+            f.write(str(offset))
+    except Exception as e:
+        print(f"خطا در ذخیره offset: {e}")
+
+def log_message(chat_id, text):
+    """تابع برای ثبت پیام‌های دریافت شده در یک فایل."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(f"[{timestamp}] | Chat ID: {chat_id} | Text: {text}\\n")
+    except Exception as e:
+        print(f"خطا در ثبت لاگ پیام: {e}")
+
+def get_updates(limit=20, offset=None):
+    """تابع برای دریافت آپدیت‌های جدید از API روبیکا."""
+    try:
+        data = {"limit": limit}
+        if offset:
+            data["offset_id"] = offset
+        resp = requests.post(f"{BASE_URL}/getUpdates", json=data, timeout=70)
+        resp.raise_for_status()
+        result = resp.json()
+        updates = result.get("data", {}).get("updates", [])
+        next_offset = result.get("data", {}).get("next_offset_id")
+        return updates, next_offset
+    except requests.exceptions.RequestException as e:
+        print(f"خطا در دریافت آپدیت: {e}")
+        return [], None
+    except Exception as e:
+        print(f"خطای غیرمنتظره در دریافت آپدیت: {e}")
+        return [], None
+
+def send_message(chat_id, text, reply_to_message_id=None):
+    """تابع برای ارسال پیام به چت مشخص."""
+    try:
+        payload = {"chat_id": chat_id, "text": text}
+        if reply_to_message_id:
+            payload["reply_to_message_id"] = reply_to_message_id
+        resp = requests.post(f"{BASE_URL}/sendMessage", json=payload, timeout=15)
+        resp.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"خطا در ارسال پیام: {e}")
+    except Exception as e:
+        print(f"خطای غیرمنتظره در ارسال پیام: {e}")
+
+def ask_ai(prompt):
+    """تابع برای پرسش از وب سرویس هوش مصنوعی."""
+    try:
+        params = {"text": prompt}
+        if CHAT_API_TOKEN:
+            params["token"] = CHAT_API_TOKEN
+        resp = requests.get(CHAT_API_URL, params=params, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        answer = data.get("result", "")
+        return answer if answer else "متاسفم، پاسخ قابل دریافت نبود."
+    except requests.exceptions.RequestException as e:
+        print(f"خطا در تماس با وب سرویس: {e}")
+        return "متاسفم، مشکلی در ارتباط با وب سرویس پیش آمده!"
+    except Exception as e:
+        print(f"خطای غیرمنتظره در تماس با وب سرویس: {e}")
+        return "متاسفم، مشکلی پیش آمده!"
+
+def handle_message(chat_id, text, message_id):
+    """تابع اصلی برای پردازش هر پیام دریافتی."""
+    log_message(chat_id, text)
+    print(f"پیام جدید از {chat_id}: {text}")
+
+    if text.strip() == "/start":
+        send_message(chat_id, "سلام، من هوش مصنوعی هستم، چطور میتونم کمکتون کنم؟", reply_to_message_id=message_id)
+        return
+
+    send_message(chat_id, "در حال فکر کردن...", reply_to_message_id=message_id)
+
+    answer = ask_ai(text)
+    send_message(chat_id, answer, reply_to_message_id=message_id)
+
+def main():
+    """حلقه اصلی اجرای ربات."""
+    global offset_id
+    print("ربات روبیکا با وب سرویس ChatGPT آماده شد!")
+
+    while True:
+        updates, next_offset = get_updates(offset=offset_id)
+        if updates:
+            for u in updates:
+                chat_id, text, message_id = None, None, None
+                if u.get("type") == "NewMessage":
+                    chat_id = u.get("chat_id")
+                    new_msg = u.get("new_message", {})
+                    text = new_msg.get("text", "")
+                    message_id = new_msg.get("message_id")
+                    if text:
+                        Thread(target=handle_message, args=(chat_id, text, message_id)).start()
+        
+        if next_offset:
+            offset_id = next_offset
+            save_offset(offset_id)
+
+        time.sleep(1)
+
+if __name__ == "__main__":
+    main()
+`;
+
+        // Function to generate the final code with the user's token
+        function generateCode() {
+            const token = tokenInput.value.trim();
+            if (!token) {
+                // Use a non-disruptive message instead of alert
+                showStatusMessage("لطفاً توکن ربات خود را وارد کنید.", "text-red-500");
+                return;
+            }
+
+            const finalCode = botCodeTemplate.replace('"{token_placeholder}"', `"${token}"`);
+            codeOutput.textContent = finalCode;
+            codeContainer.classList.remove('hidden');
+        }
+
+        // Function to copy the code to the clipboard
+        function copyCode() {
+            const codeToCopy = codeOutput.textContent;
+            navigator.clipboard.writeText(codeToCopy).then(() => {
+                showStatusMessage("کد با موفقیت کپی شد!", "text-green-500");
+            }).catch(err => {
+                showStatusMessage("خطا در کپی کردن کد.", "text-red-500");
+            });
+        }
+        
+        // Helper function to show status messages
+        function showStatusMessage(message, colorClass) {
+            copyStatus.textContent = message;
+            copyStatus.className = `text-sm mt-2 font-medium ${colorClass}`;
+            copyStatus.classList.remove('hidden');
+            setTimeout(() => {
+                copyStatus.classList.add('hidden');
+            }, 3000);
+        }
+
+        generateCodeBtn.addEventListener('click', generateCode);
+        copyCodeBtn.addEventListener('click', copyCode);
+        
+        // Prevent default form submission and listen for Enter key
+        passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                submitPasswordBtn.click();
+            }
+        });
+        
+    </script>
+</body>
+</html>
