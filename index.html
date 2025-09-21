@@ -14,6 +14,14 @@
         .correct-password-bg {
             background-color: #d1fae5;
         }
+        .bot-type-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .bot-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -35,39 +43,57 @@
 
         <!-- Main Tool Section -->
         <div id="toolSection" class="hidden">
-            <p class="text-gray-600 mb-8">توکن ربات خود را وارد کنید تا کد پایتون آماده را دریافت کنید.<br>توکن شما در هیچ سروری ذخیره نمی‌شود.</p>
+            <p class="text-gray-600 mb-8">نوع رباتی که میخواهید بسازید را انتخاب کنید.</p>
 
-            <!-- Input Section -->
-            <div class="mb-6">
-                <label for="tokenInput" class="block text-sm font-medium text-gray-700 mb-2">توکن ربات شما:</label>
-                <input type="text" id="tokenInput" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3" placeholder="توکن خود را اینجا وارد کنید">
+            <!-- Bot Type Selection -->
+            <div id="botTypeSelection" class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                <div id="aiBotCard" class="bot-type-card bg-blue-100 text-blue-800 p-6 rounded-xl shadow-md border-2 border-blue-100 hover:border-blue-400">
+                    <h3 class="font-bold text-lg mb-2">ربات هوش مصنوعی (ChatGPT)</h3>
+                    <p class="text-sm">با متن شما صحبت می‌کند و به سوالات پاسخ می‌دهد.</p>
+                </div>
+                <div id="imageBotCard" class="bot-type-card bg-green-100 text-green-800 p-6 rounded-xl shadow-md border-2 border-green-100 hover:border-green-400">
+                    <h3 class="font-bold text-lg mb-2">ربات ساخت تصویر</h3>
+                    <p class="text-sm">متن شما را به یک تصویر تبدیل می‌کند.</p>
+                </div>
             </div>
 
-            <!-- Action Button -->
-            <button id="generateCodeBtn" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-700 transition duration-300 ease-in-out shadow-lg">
-                آماده‌سازی کد
-            </button>
+            <!-- Input and Code Sections -->
+            <div id="botBuilder" class="hidden">
+                <p class="text-gray-600 mb-6">توکن ربات خود را وارد کنید تا کد پایتون آماده را دریافت کنید.<br>توکن شما در هیچ سروری ذخیره نمی‌شود.</p>
 
-            <!-- Code Output Section -->
-            <div id="codeContainer" class="mt-8 hidden">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">کد پایتون آماده</h2>
-                <div class="relative bg-gray-800 text-white p-6 rounded-xl shadow-lg">
-                    <button id="copyCodeBtn" class="absolute top-3 left-3 bg-gray-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-gray-700 transition-colors duration-200">کپی</button>
-                    <pre id="codeOutput" class="whitespace-pre-wrap font-mono text-sm max-h-96 overflow-y-auto"></pre>
+                <div class="mb-6">
+                    <label for="tokenInput" class="block text-sm font-medium text-gray-700 mb-2">توکن ربات شما:</label>
+                    <input type="text" id="tokenInput" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3" placeholder="توکن خود را اینجا وارد کنید">
                 </div>
-                <p id="copyStatus" class="text-sm mt-2 hidden"></p>
+
+                <button id="generateCodeBtn" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-700 transition duration-300 ease-in-out shadow-lg">
+                    آماده‌سازی کد
+                </button>
+
+                <div id="codeContainer" class="mt-8 hidden">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">کد پایتون آماده</h2>
+                    <div class="relative bg-gray-800 text-white p-6 rounded-xl shadow-lg">
+                        <button id="copyCodeBtn" class="absolute top-3 left-3 bg-gray-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-gray-700 transition-colors duration-200">کپی</button>
+                        <pre id="codeOutput" class="whitespace-pre-wrap font-mono text-sm max-h-96 overflow-y-auto"></pre>
+                    </div>
+                    <p id="copyStatus" class="text-sm mt-2 hidden"></p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const correctPassword = '13931393as12345';
+        const correctPassword = '13931393as';
         
         const passwordSection = document.getElementById('passwordSection');
         const passwordInput = document.getElementById('passwordInput');
         const submitPasswordBtn = document.getElementById('submitPasswordBtn');
         const passwordStatus = document.getElementById('passwordStatus');
         const toolSection = document.getElementById('toolSection');
+        const botTypeSelection = document.getElementById('botTypeSelection');
+        const aiBotCard = document.getElementById('aiBotCard');
+        const imageBotCard = document.getElementById('imageBotCard');
+        const botBuilder = document.getElementById('botBuilder');
         
         const tokenInput = document.getElementById('tokenInput');
         const generateCodeBtn = document.getElementById('generateCodeBtn');
@@ -76,21 +102,9 @@
         const copyCodeBtn = document.getElementById('copyCodeBtn');
         const copyStatus = document.getElementById('copyStatus');
 
-        submitPasswordBtn.addEventListener('click', () => {
-            if (passwordInput.value === correctPassword) {
-                passwordSection.classList.add('hidden');
-                toolSection.classList.remove('hidden');
-                document.body.classList.add('correct-password-bg');
-            } else {
-                passwordStatus.textContent = "رمز عبور اشتباه است.";
-                passwordStatus.className = "absolute top-full left-1/2 -translate-x-1/2 text-sm mt-2 text-red-500 font-medium";
-                setTimeout(() => {
-                    passwordStatus.textContent = "";
-                }, 3000);
-            }
-        });
+        let selectedBotType = null;
 
-        const botCodeTemplate = `
+        const aiBotTemplate = `
 # -*- coding: utf-8 -*-
 import requests
 import time
@@ -228,32 +242,222 @@ if __name__ == "__main__":
     main()
 `;
 
-        // Function to generate the final code with the user's token
-        function generateCode() {
+const imageBotTemplate = `
+# -*- coding: utf-8 -*-
+import requests
+import time
+import os
+import json
+from datetime import datetime
+from threading import Thread
+
+# ====== تنظیمات روبیکا ======
+TOKEN = "{token_placeholder}"
+BASE_URL = f"https://botapi.rubika.ir/v3/{TOKEN}"
+OFFSET_FILE = "offset.txt"
+LOG_FILE = "messages.txt"
+
+# ====== وب سرویس ساخت تصویر ======
+IMAGE_API_URL = "http://PyBot.Napelon-Ai.ir/Aks.php/file.php"
+
+# بارگذاری offset
+offset_id = None
+if os.path.exists(OFFSET_FILE):
+    try:
+        with open(OFFSET_FILE, "r", encoding="utf-8") as f:
+            offset_id = f.read().strip()
+    except Exception as e:
+        print(f"خطا در خواندن فایل offset: {e}")
+        offset_id = None
+
+def save_offset(offset):
+    """
+    ذخیره کردن آفست برای جلوگیری از پردازش پیام‌های تکراری.
+    """
+    if offset:
+        with open(OFFSET_FILE, "w", encoding="utf-8") as f:
+            f.write(str(offset))
+
+def log_message(chat_id, text):
+    """
+    ذخیره پیام‌های دریافتی در یک فایل متنی.
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(f"[{timestamp}] | {chat_id} | {text}\\n")
+
+def get_updates(limit=20, offset=None):
+    """
+    دریافت آپدیت‌های جدید از روبیکا.
+    """
+    try:
+        data = {"limit": limit}
+        if offset:
+            data["offset_id"] = offset
+        resp = requests.post(f"{BASE_URL}/getUpdates", json=data, timeout=70)
+        result = resp.json()
+        updates = result.get("data", {}).get("updates", [])
+        next_offset = result.get("data", {}).get("next_offset_id")
+        return updates, next_offset
+    except Exception as e:
+        print("خطا در دریافت آپدیت:", e)
+        return [], None
+
+def send_message(chat_id, text, reply_to_message_id=None):
+    """
+    ارسال پیام متنی.
+    """
+    try:
+        payload = {"chat_id": chat_id, "text": text}
+        if reply_to_message_id:
+            payload["reply_to_message_id"] = reply_to_message_id
+        resp = requests.post(f"{BASE_URL}/sendMessage", json=payload, timeout=15)
+        if resp.status_code != 200:
+            print("خطا در ارسال پیام:", resp.text)
+    except Exception as e:
+        print("خطا در ارسال پیام:", e)
+
+def send_photo(chat_id, photo_bytes, reply_to_message_id=None):
+    """
+    ارسال عکس به چت.
+    """
+    try:
+        url = f"{BASE_URL}/sendPhoto"
+        files = {'photo': ('photo.png', photo_bytes, 'image/png')}
+        data = {'chat_id': chat_id}
+        if reply_to_message_id:
+            data['reply_to_message_id'] = reply_to_message_id
+            
+        resp = requests.post(url, files=files, data=data, timeout=30)
+        if resp.status_code != 200:
+            print("خطا در ارسال عکس:", resp.text)
+            send_message(chat_id, "متاسفم، مشکلی در ارسال تصویر پیش آمد.", reply_to_message_id)
+    except Exception as e:
+        print("خطا در ارسال عکس:", e)
+        send_message(chat_id, "متاسفم، مشکلی در ارسال تصویر پیش آمد.", reply_to_message_id)
+
+def generate_image(prompt):
+    """
+    دریافت عکس از وب سرویس.
+    """
+    try:
+        url = f"{IMAGE_API_URL}?prompt={requests.utils.quote(prompt)}"
+        resp = requests.get(url, timeout=60)
+        resp.raise_for_status() # اگر پاسخی غیر از 200 باشد، خطا می‌دهد
+        return resp.content
+    except requests.exceptions.RequestException as e:
+        print("خطا در تماس با وب سرویس:", e)
+        return None
+
+def handle_message(chat_id, text, message_id):
+    """
+    پردازش پیام دریافتی در یک Thread جداگانه.
+    """
+    log_message(chat_id, text)
+    print(f"پیام جدید از {chat_id}: {text}")
+
+    if text.strip() == "/start":
+        send_message(chat_id, "سلام، من ربات هوش مصنوعی ساخت تصویر هستم.\nمتن مورد نظرتون رو بفرستید تا براتون تصویر بسازم.", reply_to_message_id=message_id)
+        return
+
+    send_message(chat_id, "در حال ساخت تصویر...", reply_to_message_id=message_id)
+
+    image_data = generate_image(text)
+    if image_data:
+        send_photo(chat_id, image_data, reply_to_message_id=message_id)
+    else:
+        send_message(chat_id, "متاسفم، مشکلی در ساخت تصویر پیش آمد.", reply_to_message_id=message_id)
+
+def main():
+    """
+    حلقه اصلی ربات برای دریافت آپدیت‌ها.
+    """
+    global offset_id
+    print("ربات ساخت تصویر روبیکا آماده شد!")
+
+    while True:
+        updates, next_offset = get_updates(offset=offset_id)
+        if not updates:
+            time.sleep(1)
+            continue
+
+        for u in updates:
+            chat_id, text, message_id = None, None, None
+            if "new_message" in u and u["new_message"].get("type") == "Text":
+                new_msg = u["new_message"]
+                chat_id = u.get("chat_id")
+                text = new_msg.get("text", "")
+                message_id = new_msg.get("message_id")
+                
+            if chat_id and text:
+                Thread(target=handle_message, args=(chat_id, text, message_id)).start()
+
+        if next_offset:
+            offset_id = next_offset
+            save_offset(offset_id)
+
+        time.sleep(1)
+
+if __name__ == "__main__":
+    main()
+`;
+
+        submitPasswordBtn.addEventListener('click', () => {
+            if (passwordInput.value === correctPassword) {
+                passwordSection.classList.add('hidden');
+                toolSection.classList.remove('hidden');
+                document.body.classList.add('correct-password-bg');
+            } else {
+                showPasswordStatus("رمز عبور اشتباه است.", "text-red-500");
+            }
+        });
+        
+        aiBotCard.addEventListener('click', () => {
+            selectedBotType = 'ai';
+            botTypeSelection.classList.add('hidden');
+            botBuilder.classList.remove('hidden');
+        });
+
+        imageBotCard.addEventListener('click', () => {
+            selectedBotType = 'image';
+            botTypeSelection.classList.add('hidden');
+            botBuilder.classList.remove('hidden');
+        });
+
+        generateCodeBtn.addEventListener('click', () => {
             const token = tokenInput.value.trim();
             if (!token) {
-                // Use a non-disruptive message instead of alert
-                showStatusMessage("لطفاً توکن ربات خود را وارد کنید.", "text-red-500");
+                showCopyStatus("لطفاً توکن ربات خود را وارد کنید.", "text-red-500");
                 return;
             }
-
-            const finalCode = botCodeTemplate.replace('"{token_placeholder}"', `"${token}"`);
+            let finalCode = '';
+            if (selectedBotType === 'ai') {
+                finalCode = aiBotTemplate.replace('"{token_placeholder}"', `"${token}"`);
+            } else if (selectedBotType === 'image') {
+                finalCode = imageBotTemplate.replace('"{token_placeholder}"', `"${token}"`);
+            }
             codeOutput.textContent = finalCode;
             codeContainer.classList.remove('hidden');
-        }
-
-        // Function to copy the code to the clipboard
-        function copyCode() {
+        });
+        
+        copyCodeBtn.addEventListener('click', () => {
             const codeToCopy = codeOutput.textContent;
             navigator.clipboard.writeText(codeToCopy).then(() => {
-                showStatusMessage("کد با موفقیت کپی شد!", "text-green-500");
+                showCopyStatus("کد با موفقیت کپی شد!", "text-green-500");
             }).catch(err => {
-                showStatusMessage("خطا در کپی کردن کد.", "text-red-500");
+                showCopyStatus("خطا در کپی کردن کد.", "text-red-500");
             });
+        });
+
+        function showPasswordStatus(message, colorClass) {
+            passwordStatus.textContent = message;
+            passwordStatus.className = `absolute top-full left-1/2 -translate-x-1/2 text-sm mt-2 font-medium ${colorClass}`;
+            setTimeout(() => {
+                passwordStatus.textContent = '';
+            }, 3000);
         }
         
-        // Helper function to show status messages
-        function showStatusMessage(message, colorClass) {
+        function showCopyStatus(message, colorClass) {
             copyStatus.textContent = message;
             copyStatus.className = `text-sm mt-2 font-medium ${colorClass}`;
             copyStatus.classList.remove('hidden');
@@ -261,17 +465,12 @@ if __name__ == "__main__":
                 copyStatus.classList.add('hidden');
             }, 3000);
         }
-
-        generateCodeBtn.addEventListener('click', generateCode);
-        copyCodeBtn.addEventListener('click', copyCode);
         
-        // Prevent default form submission and listen for Enter key
         passwordInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 submitPasswordBtn.click();
             }
         });
-        
     </script>
 </body>
 </html>
